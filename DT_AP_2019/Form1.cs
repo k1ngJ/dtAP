@@ -113,7 +113,7 @@ namespace DT_AP_2019
             cmb_sp.ValueMember = "Value";
             cmb_sp.DisplayMember = "Key";
             cmb_sp.SelectedIndex = 8;
-            
+
 
             // ahk
 
@@ -298,7 +298,7 @@ namespace DT_AP_2019
                         Key _ahk = (Key)k.ConvertFromString(ahkl.Split(':')[0]);
                         all_keysB.Add(_ahk);
                     }
-                    
+
                 }
 
 
@@ -466,7 +466,7 @@ namespace DT_AP_2019
                     lbl_sp.Text = string.Format("{0} / {1}", curSp, maxSp);
 
                 });
-                
+
                 Thread.Sleep(autopotDelay);
             }
         }
@@ -486,7 +486,7 @@ namespace DT_AP_2019
                         currentBuffValue = roClient.ReadMemory(roClient.statusBufferAddress + i * 4);
                         if (currentBuffValue == 3)
                             foundGloom = 1;
-                        if (currentBuffValue == 39)
+                        if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
                             foundAspd = 1;
                         if (foundAspd == 1 && foundGloom == 1)
                             break;
