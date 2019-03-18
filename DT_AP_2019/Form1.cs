@@ -397,7 +397,7 @@ namespace DT_AP_2019
                                 // pId matched
                                 roProc = pc1;
                                 roClient = new ROClient(roProc);
-                                roClient.currentHpBaseAddress = 0x00CAFADC;
+                                roClient.currentHpBaseAddress = 0x00E4CAF4;
                                 roClient.mouseFixAddress = 0x00C77578;
 
                                 roClient.statusBufferAddress = roClient.currentHpBaseAddress + 1148;
