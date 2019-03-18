@@ -364,12 +364,12 @@ namespace DT_AP_2019
         {
             try
             {
-                autopotDelay = int.Parse(tb_apDelay.Text);
-                autobuffDelay = int.Parse(tb_abuffDelay.Text);
+                autopotDelay      = int.Parse(tb_apDelay.Text);
+                autobuffDelay     = int.Parse(tb_abuffDelay.Text);
                 autobuffReadDelay = int.Parse(tb_abuffReadDelay.Text);
-                ahkDelay = int.Parse(tb_spamDelay.Text);
-                hpPercent = int.Parse(textBox1.Text);
-                spPercent = int.Parse(textBox2.Text);
+                ahkDelay          = int.Parse(tb_spamDelay.Text);
+                hpPercent         = int.Parse(textBox1.Text);
+                spPercent         = int.Parse(textBox2.Text);
             }
             catch (Exception ex)
             {
@@ -397,23 +397,9 @@ namespace DT_AP_2019
                                 // pId matched
                                 roProc = pc1;
                                 roClient = new ROClient(roProc);
-                                roClient.currentHpBaseAddress = 0x00E4CAF4;
-                                roClient.mouseFixAddress = 0x00C77578;
-
-                                roClient.statusBufferAddress = roClient.currentHpBaseAddress + 1148;
-
-                                Thread apThread = new Thread(() => autopotThread());
-                                apThread.SetApartmentState(ApartmentState.STA);
-                                apThread.Start();
-
-                                Thread buffThread = new Thread(() => autoBuffThread());
-                                buffThread.SetApartmentState(ApartmentState.STA);
-                                buffThread.Start();
-
-                                Thread ahkThread = new Thread(() => spammerThread());
-                                ahkThread.SetApartmentState(ApartmentState.STA);
-                                ahkThread.Start();
-
+                                startAutoPotThread();
+                                startBuffThread();
+                                startAhkThread();
 
                                 break;
                             }
@@ -429,6 +415,25 @@ namespace DT_AP_2019
             }
         }
 
+        private void startAutoPotThread() {
+            Thread apThread = new Thread(() => autopotThread());
+            apThread.SetApartmentState(ApartmentState.STA);
+            apThread.Start();
+        }
+
+        private void startBuffThread() {
+            Thread buffThread = new Thread(() => autoBuffThread());
+            buffThread.SetApartmentState(ApartmentState.STA);
+            buffThread.Start();
+        }
+
+        private void startAhkThread() {
+            Thread ahkThread = new Thread(() => spammerThread());
+            ahkThread.SetApartmentState(ApartmentState.STA);
+            ahkThread.Start();
+        }
+
+
         // autopot
         private void autopotThread()
         {
@@ -437,27 +442,23 @@ namespace DT_AP_2019
             {
                 this.Invoke((MethodInvoker)delegate()
                 {
-                    curHp = roClient.ReadMemory(roClient.currentHpBaseAddress);
-                    maxHp = roClient.ReadMemory(roClient.currentHpBaseAddress + 4);
-
-                    curSp = roClient.ReadMemory(roClient.currentHpBaseAddress + 8);
-                    maxSp = roClient.ReadMemory(roClient.currentHpBaseAddress + 12);
-
                     // check hp first
-                    if (curHp * 100 < hpPercent * maxHp)
+                    if (roClient.IsHpBelow(hpPercent))
                     {
                         potHp();
                         hp_pot_count++;
+
                         if (hp_pot_count == 3) {
                           hp_pot_count = 0;
-                          if (curSp * 100 < spPercent * maxSp) {
+
+                          if (roClient.IsSpBelow(spPercent)) {
                             potSp();
                           }
                         }
                     }
 
                     // check sp
-                    if (curSp * 100 < spPercent * maxSp)
+                    if (roClient.IsSpBelow(spPercent))
                     {
                       potSp();
                     }
