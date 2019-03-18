@@ -499,10 +499,18 @@ namespace DT_AP_2019
                         if ((foundAspd && foundGloom) || currentBuffValue == 0xFFFFFFFF)
                             break;
 
-                        if (currentBuffValue == 3)
+                        switch(currentBuffValue) {
+                          case 3:
                             foundGloom = true;
-                        if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
+                            break;
+                          case 37:
+                          case 38:
+                          case 39:
                             foundAspd = true;
+                            break;
+                          default:
+                            break;
+                        }
                     }
 
                     if (foundGloom && cb_gloom.Checked)
