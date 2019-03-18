@@ -464,8 +464,8 @@ namespace DT_AP_2019
                     }
 
                     // update UI
-                    lbl_hp.Text = string.Format("{0} / {1}", curHp, maxHp);
-                    lbl_sp.Text = string.Format("{0} / {1}", curSp, maxSp);
+                    lbl_hp.Text = roClient.HpLabel();
+                    lbl_sp.Text = roClient.SpLabel();
 
                 });
 

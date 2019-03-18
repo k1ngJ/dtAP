@@ -48,6 +48,14 @@ namespace DT_AP_2019
           return ReadCurrentSp() * 100 < percent * ReadMaxSp();
         }
 
+        public string HpLabel() {
+          return string.Format("{0} / {1}", readCurrentHp(), readMaxHp());
+        }
+
+        public string SpLabel() {
+          return string.Format("{0} / {1}", readCurrentSp(), readMaxSp());
+        }
+
         private uint ReadCurrentHp() {
           return ReadMemory(this.currentHpBaseAddress);
         }
