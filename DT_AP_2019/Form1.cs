@@ -507,13 +507,13 @@ namespace DT_AP_2019
                             break;
                     }
 
-                    if (foundGloom && cb_gloom.Checked)
+                    if (!foundGloom && cb_gloom.Checked)
                     {
                         useBoxOfGloom();
                         Thread.Sleep(autobuffDelay);
                     }
 
-                    if (foundAspd && cb_aspd.Checked)
+                    if (!foundAspd && cb_aspd.Checked)
                     {
                         useAspdPotion();
                         Thread.Sleep(autobuffDelay);
