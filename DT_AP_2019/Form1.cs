@@ -497,21 +497,14 @@ namespace DT_AP_2019
                     {
                         currentBuffValue = roClient.ReadMemory(roClient.statusBufferAddress + i * 4);
 
-                        if ((foundAspd && foundGloom) || currentBuffValue == 0xFFFFFFFF)
-                            break;
-
-                        switch(currentBuffValue) {
-                          case 3:
+                        if (currentBuffValue == 3)
                             foundGloom = true;
-                            break;
-                          case 37:
-                          case 38:
-                          case 39:
+                        if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
                             foundAspd = true;
+                        if (foundAspd && foundGloom )
                             break;
-                          default:
+                        if (currentBuffValue == 0xFFFFFFFF)
                             break;
-                        }
                     }
 
                     if (foundGloom && cb_gloom.Checked)
