@@ -176,8 +176,8 @@ namespace DT_AP_2019
         private int ahkDelay { get; set; }
 
         // autobuff
-        private int foundGloom { get; set; }
-        private int foundAspd { get; set; }
+        private bool foundGloom { get; set; }
+        private bool foundAspd { get; set; }
 
         // ahk
         const int WM_LBUTTONDOWN = 0x0201;

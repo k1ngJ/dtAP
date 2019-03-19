@@ -27,7 +27,7 @@ namespace DT_AP_2019
             {
                 this.currentHpBaseAddress = 0x00E4CAF4;
                 this.mouseFixAddress      = 0x00C77578;
-                this.statusBufferAddress  = this.currentHpBaseAddress + this.STATUS_BUFFER_RELATIVE;
+                this.statusBufferAddress  = this.currentHpBaseAddress + ROClient.STATUS_BUFFER_RELATIVE;
 
                 PMR.ReadProcess = roProcess;
                 PMR.OpenProcess();
@@ -49,11 +49,11 @@ namespace DT_AP_2019
         }
 
         public string HpLabel() {
-          return string.Format("{0} / {1}", readCurrentHp(), readMaxHp());
+          return string.Format("{0} / {1}", ReadCurrentHp(), ReadMaxHp());
         }
 
         public string SpLabel() {
-          return string.Format("{0} / {1}", readCurrentSp(), readMaxSp());
+          return string.Format("{0} / {1}", ReadCurrentSp(), ReadMaxSp());
         }
 
         private uint ReadCurrentHp() {
