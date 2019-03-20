@@ -400,6 +400,7 @@ namespace DT_AP_2019
                                 startAutoPotThread();
                                 startBuffThread();
                                 startAhkThread();
+                                statusBufferSize = 100;
 
                                 break;
                             }
