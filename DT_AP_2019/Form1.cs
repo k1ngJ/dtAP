@@ -113,7 +113,7 @@ namespace DT_AP_2019
             cmb_sp.ValueMember = "Value";
             cmb_sp.DisplayMember = "Key";
             cmb_sp.SelectedIndex = 8;
-            
+
 
             // ahk
 
@@ -176,8 +176,8 @@ namespace DT_AP_2019
         private int ahkDelay { get; set; }
 
         // autobuff
-        private int foundGloom { get; set; }
-        private int foundAspd { get; set; }
+        private bool foundGloom { get; set; }
+        private bool foundAspd { get; set; }
 
         // ahk
         const int WM_LBUTTONDOWN = 0x0201;
@@ -298,7 +298,7 @@ namespace DT_AP_2019
                         Key _ahk = (Key)k.ConvertFromString(ahkl.Split(':')[0]);
                         all_keysB.Add(_ahk);
                     }
-                    
+
                 }
 
 
@@ -340,21 +340,21 @@ namespace DT_AP_2019
             }
 
             string[] settings = {
-                                            string.Format("hp_button = {0}", cmb_hp.Text),
-                                            string.Format("sp_button = {0}", cmb_sp.Text),
-                                            string.Format("ahk_list = {0}", allahk),
-                                            string.Format("hp_percent = {0}", textBox1.Text),
-                                            string.Format("sp_percent = {0}", textBox2.Text),
-                                            string.Format("gloom_button = {0}", cmb_gloom.Text),
-                                            string.Format("aspd_button = {0}", cmb_aspd.Text),
-                                            string.Format("agiscroll_button = {0}", cmb_agi.Text),
-                                            string.Format("blesscroll_button = {0}", cmb_bless.Text),
-                                            string.Format("ap_delay = {0}", tb_apDelay.Text),
-                                            string.Format("autobuff_delay = {0}", tb_abuffDelay.Text),
-                                            string.Format("autobuff_read_delay = {0}", tb_abuffReadDelay.Text),
-                                            string.Format("spam_delay = {0}", tb_spamDelay.Text),
-                                            string.Format("", "")
-                                        };
+                                  string.Format("hp_button = {0}", cmb_hp.Text),
+                                  string.Format("sp_button = {0}", cmb_sp.Text),
+                                  string.Format("ahk_list = {0}", allahk),
+                                  string.Format("hp_percent = {0}", textBox1.Text),
+                                  string.Format("sp_percent = {0}", textBox2.Text),
+                                  string.Format("gloom_button = {0}", cmb_gloom.Text),
+                                  string.Format("aspd_button = {0}", cmb_aspd.Text),
+                                  string.Format("agiscroll_button = {0}", cmb_agi.Text),
+                                  string.Format("blesscroll_button = {0}", cmb_bless.Text),
+                                  string.Format("ap_delay = {0}", tb_apDelay.Text),
+                                  string.Format("autobuff_delay = {0}", tb_abuffDelay.Text),
+                                  string.Format("autobuff_read_delay = {0}", tb_abuffReadDelay.Text),
+                                  string.Format("spam_delay = {0}", tb_spamDelay.Text),
+                                  string.Format("", "")
+                                };
 
             File.WriteAllLines("ap_settings.txt", settings);
             readSettingsFromUI();
@@ -364,12 +364,12 @@ namespace DT_AP_2019
         {
             try
             {
-                autopotDelay = int.Parse(tb_apDelay.Text);
-                autobuffDelay = int.Parse(tb_abuffDelay.Text);
+                autopotDelay      = int.Parse(tb_apDelay.Text);
+                autobuffDelay     = int.Parse(tb_abuffDelay.Text);
                 autobuffReadDelay = int.Parse(tb_abuffReadDelay.Text);
-                ahkDelay = int.Parse(tb_spamDelay.Text);
-                hpPercent = int.Parse(textBox1.Text);
-                spPercent = int.Parse(textBox2.Text);
+                ahkDelay          = int.Parse(tb_spamDelay.Text);
+                hpPercent         = int.Parse(textBox1.Text);
+                spPercent         = int.Parse(textBox2.Text);
             }
             catch (Exception ex)
             {
@@ -397,24 +397,10 @@ namespace DT_AP_2019
                                 // pId matched
                                 roProc = pc1;
                                 roClient = new ROClient(roProc);
-                                roClient.currentHpBaseAddress = 0x00CAFADC;
-                                roClient.mouseFixAddress = 0x00C77578;
-
-                                roClient.statusBufferAddress = roClient.currentHpBaseAddress + 1148;
+                                startAutoPotThread();
+                                startBuffThread();
+                                startAhkThread();
                                 statusBufferSize = 100;
-
-                                Thread apThread = new Thread(() => autopotThread());
-                                apThread.SetApartmentState(ApartmentState.STA);
-                                apThread.Start();
-
-                                Thread buffThread = new Thread(() => autoBuffThread());
-                                buffThread.SetApartmentState(ApartmentState.STA);
-                                buffThread.Start();
-
-                                Thread ahkThread = new Thread(() => spammerThread());
-                                ahkThread.SetApartmentState(ApartmentState.STA);
-                                ahkThread.Start();
-
 
                                 break;
                             }
@@ -430,45 +416,72 @@ namespace DT_AP_2019
             }
         }
 
+        private void startAutoPotThread() {
+            Thread apThread = new Thread(() => autopotThread());
+            apThread.SetApartmentState(ApartmentState.STA);
+            apThread.Start();
+        }
+
+        private void startBuffThread() {
+            Thread buffThread = new Thread(() => autoBuffThread());
+            buffThread.SetApartmentState(ApartmentState.STA);
+            buffThread.Start();
+        }
+
+        private void startAhkThread() {
+            Thread ahkThread = new Thread(() => spammerThread());
+            ahkThread.SetApartmentState(ApartmentState.STA);
+            ahkThread.Start();
+        }
+
+
         // autopot
         private void autopotThread()
         {
+            uint hp_pot_count = 0;
             while (true)
             {
                 this.Invoke((MethodInvoker)delegate()
                 {
-                    curHp = roClient.ReadMemory(roClient.currentHpBaseAddress);
-                    maxHp = roClient.ReadMemory(roClient.currentHpBaseAddress + 4);
-
-                    curSp = roClient.ReadMemory(roClient.currentHpBaseAddress + 8);
-                    maxSp = roClient.ReadMemory(roClient.currentHpBaseAddress + 12);
-
                     // check hp first
-                    if (curHp * 100 < hpPercent * maxHp)
+                    if (roClient.IsHpBelow(hpPercent))
                     {
-                        // try f8
-                        PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_hp.SelectedValue, 0); // keydown
-                        PostMessage(roProc.MainWindowHandle, 0x101, (Keys)cmb_hp.SelectedValue, 0); // keyup
+                        potHp();
+                        hp_pot_count++;
+
+                        if (hp_pot_count == 3) {
+                          hp_pot_count = 0;
+
+                          if (roClient.IsSpBelow(spPercent)) {
+                            potSp();
+                          }
+                        }
                     }
 
                     // check sp
-                    if (curSp * 100 < spPercent * maxSp)
+                    if (roClient.IsSpBelow(spPercent))
                     {
-                        // try f9
-                        PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_sp.SelectedValue, 0); // keydown
-                        PostMessage(roProc.MainWindowHandle, 0x101, (Keys)cmb_sp.SelectedValue, 0); // keyup
+                      potSp();
                     }
 
-
-
                     // update UI
-                    lbl_hp.Text = string.Format("{0} / {1}", curHp, maxHp);
-                    lbl_sp.Text = string.Format("{0} / {1}", curSp, maxSp);
+                    lbl_hp.Text = roClient.HpLabel();
+                    lbl_sp.Text = roClient.SpLabel();
 
                 });
-                
+
                 Thread.Sleep(autopotDelay);
             }
+        }
+
+        private void potSp() {
+          PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_sp.SelectedValue, 0); // keydown
+          PostMessage(roProc.MainWindowHandle, 0x101, (Keys)cmb_sp.SelectedValue, 0); // keyup
+        }
+
+        private void potHp() {
+          PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_hp.SelectedValue, 0); // keydown
+          PostMessage(roProc.MainWindowHandle, 0x101, (Keys)cmb_hp.SelectedValue, 0); // keyup
         }
 
         // autobuff
@@ -479,33 +492,45 @@ namespace DT_AP_2019
             {
                 this.Invoke((MethodInvoker)delegate()
                 {
-                    foundGloom = 0;
-                    foundAspd = 0;
+                    foundGloom = false;
+                    foundAspd  = false;
                     for (int i = 0; i <= statusBufferSize - 1; i++)
                     {
                         currentBuffValue = roClient.ReadMemory(roClient.statusBufferAddress + i * 4);
+
                         if (currentBuffValue == 3)
-                            foundGloom = 1;
-                        if (currentBuffValue == 39)
-                            foundAspd = 1;
-                        if (foundAspd == 1 && foundGloom == 1)
+                            foundGloom = true;
+                        if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
+                            foundAspd = true;
+                        if (foundAspd && foundGloom )
                             break;
                         if (currentBuffValue == 0xFFFFFFFF)
                             break;
                     }
-                    if (foundGloom == 0 && cb_gloom.Checked)
+
+                    if (!foundGloom && cb_gloom.Checked)
                     {
-                        PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_gloom.SelectedValue, 0);
+                        useBoxOfGloom();
                         Thread.Sleep(autobuffDelay);
                     }
-                    if (foundAspd == 0 && cb_aspd.Checked)
+
+                    if (!foundAspd && cb_aspd.Checked)
                     {
-                        PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_aspd.SelectedValue, 0);
+                        useAspdPotion();
                         Thread.Sleep(autobuffDelay);
                     }
                 });
+
                 Thread.Sleep(autobuffReadDelay);
             }
+        }
+
+        private void useBoxOfGloom() {
+          PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_gloom.SelectedValue, 0);
+        }
+
+        private void useAspdPotion() {
+          PostMessage(roProc.MainWindowHandle, 0x100, (Keys)cmb_aspd.SelectedValue, 0);
         }
 
         // spammer
