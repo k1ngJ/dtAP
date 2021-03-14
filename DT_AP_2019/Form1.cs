@@ -178,6 +178,7 @@ namespace DT_AP_2019
         // autobuff
         private bool foundGloom { get; set; }
         private bool foundAspd { get; set; }
+        private bool foundQuagmire { get; set; }
 
         // ahk
         const int WM_LBUTTONDOWN = 0x0201;
@@ -494,12 +495,15 @@ namespace DT_AP_2019
                 {
                     foundGloom = false;
                     foundAspd  = false;
+                    foundQuagmire = false;
                     for (int i = 0; i <= statusBufferSize - 1; i++)
                     {
                         currentBuffValue = roClient.ReadMemory(roClient.statusBufferAddress + i * 4);
 
                         if (currentBuffValue == 3)
                             foundGloom = true;
+                        if (currentBuffValue == 8)
+                            foundQuagmire = true;
                         if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
                             foundAspd = true;
                         if (foundAspd && foundGloom )
@@ -508,7 +512,7 @@ namespace DT_AP_2019
                             break;
                     }
 
-                    if (!foundGloom && cb_gloom.Checked)
+                    if (!foundGloom && cb_gloom.Checked && !foundQuagmire)
                     {
                         useBoxOfGloom();
                         Thread.Sleep(autobuffDelay);
