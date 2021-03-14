@@ -184,6 +184,18 @@ namespace DT_AP_2019
         const int WM_LBUTTONDOWN = 0x0201;
         const int WM_LBUTTONUP = 0x0202;
 
+        // buff status
+        enum BuffTypes : uint
+        {
+            ST_PROVOKE,
+            ST_IMPROVE_CONCENTRATION = 3,
+            ST_QUAGMIRE = 8,
+            ST_ASPD_A = 37,
+            ST_ASPD_B,
+            ST_ASPD_C
+
+        }
+
         public void read_settings()
         {
             KeyConverter k = new KeyConverter();
@@ -489,6 +501,7 @@ namespace DT_AP_2019
         private void autoBuffThread()
         {
             uint currentBuffValue = 0;
+            bool buffStatusBufferEnd;
             while (true)
             {
                 this.Invoke((MethodInvoker)delegate()
@@ -496,20 +509,29 @@ namespace DT_AP_2019
                     foundGloom = false;
                     foundAspd  = false;
                     foundQuagmire = false;
+                    buffStatusBufferEnd = false;
                     for (int i = 0; i <= statusBufferSize - 1; i++)
                     {
                         currentBuffValue = roClient.ReadMemory(roClient.statusBufferAddress + i * 4);
+                        switch ((BuffTypes)currentBuffValue)
+                        {
+                            case BuffTypes.ST_IMPROVE_CONCENTRATION:
+                                foundGloom = true;
+                                break;
+                            case BuffTypes.ST_ASPD_A:
+                            case BuffTypes.ST_ASPD_B:
+                            case BuffTypes.ST_ASPD_C:
+                                foundAspd = true;
+                                break;
+                            case BuffTypes.ST_QUAGMIRE:
+                                foundQuagmire = true;
+                                break;
+                            case (BuffTypes)0xFFFFFFFF:
+                                buffStatusBufferEnd = true;
+                                break;
+                        }
+                        if (buffStatusBufferEnd || (foundAspd && foundGloom)) break;
 
-                        if (currentBuffValue == 3)
-                            foundGloom = true;
-                        if (currentBuffValue == 8)
-                            foundQuagmire = true;
-                        if (currentBuffValue == 39 || currentBuffValue == 38 || currentBuffValue == 37)
-                            foundAspd = true;
-                        if (foundAspd && foundGloom )
-                            break;
-                        if (currentBuffValue == 0xFFFFFFFF)
-                            break;
                     }
 
                     if (!foundGloom && cb_gloom.Checked && !foundQuagmire)
