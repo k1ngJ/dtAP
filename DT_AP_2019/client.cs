@@ -18,8 +18,6 @@ namespace DT_AP_2019
         private process_memory_rw PMR { get; set; }
         private int _num = 0;
 
-        private const int STATUS_BUFFER_RELATIVE = 1148;
-
         public ROClient(Process roProcess)
         {
             PMR = new process_memory_rw();
@@ -27,8 +25,8 @@ namespace DT_AP_2019
             {
                 PMR.ReadProcess = roProcess;
                 this.currentHpBaseAddress = 0x00E4CAF4;
-                this.mouseFixAddress = 0x00C77578;
-                this.statusBufferAddress = this.currentHpBaseAddress + 1148;
+                this.mouseFixAddress = 0x00E135C8;
+                this.statusBufferAddress = this.currentHpBaseAddress + 0x474;
 
                 PMR.OpenProcess();
 

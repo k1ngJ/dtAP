@@ -10,5 +10,5 @@ blesscroll_button = W
 ap_delay = 10
 autobuff_delay = 300
 autobuff_read_delay = 10
-spam_delay = 30
+spam_delay = 10
 
